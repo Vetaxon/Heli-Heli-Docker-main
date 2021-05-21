@@ -1,0 +1,205 @@
+version: "3"
+networks:
+  heli:
+    driver: bridge
+
+services:
+  node:
+    build:
+      context: ./node
+      args:
+        - NODE_VERSION=${NODE_VERSION}
+        - NPM_VERSION=${NPM_VERSION}
+        - BOWER_VERSION=${BOWER_VERSION}
+        - UID=${UID}
+        - GID=${GID}
+    user: "node"
+    working_dir: /home/node/web
+    volumes:
+      - ${WEB_APP_CODE_PATH_HOST}:/home/node/web
+    ports:
+      - "${NODE_GULP_PORT}:9002"
+      - "${NODE_GULP_LIVERELOAD_PORT}:35729"
+    command: "node_modules/.bin/gulp serve"
+    networks:
+      - heli
+
+  php:
+    build:
+      context: ./php
+      args:
+        - PHP_VERSION=${PHP_VERSION}
+        - UID=${UID}
+        - GID=${GID}
+    user: "root"
+    working_dir: /var/www/html
+    volumes:
+      - ${API_APP_CODE_PATH_HOST}:/var/www/html
+      - ./php/apache2/sites-available/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./php/cron/crontab:/home/www-data/cron/crontab
+    ports:
+      - "${PHP_APACHE_PORT}:80"
+    networks:
+      - heli
+
+  mysql:
+    image: mysql:${MYSQL_VERSION}
+    command: --default-authentication-plugin=mysql_native_password --sql_mode=""
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf.d/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./mysql/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    ports:
+      - "${MYSQL_PORT}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - heli
+
+  adminer:
+    image: adminer:${ADMINER_VERSION}
+    ports:
+      - "${ADMINER_PORT}:8080"
+    networks:
+      - heli
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - heli
+
+  solr:
+    image: solr:${SOLR_VERSION}
+    volumes:
+      - ./solr/data/packages:/opt/solr/server/solr/packages
+    ports:
+      - "${SOLR_PORT}:8983"
+    networks:
+      - heli
+
+  zapier:
+    build:
+      context: ./zapier
+      args:
+        - UID=${UID}
+        - GID=${GID}
+    user: "node"
+    working_dir: /home/node/apps
+    volumes:
+      - ${ZAPIER_HELI_APP_CODE_PATH_HOST}:/home/node/apps/heli
+      - ./zapier/.zapierrc:/home/node/.zapierrc
+    networks:
+      - heli
+
+  php-fpm:
+    build:
+      context: ./php-fpm
+      args:
+        - BASE_IMAGE_TAG_PREFIX=${PHP_FPM_BASE_IMAGE_TAG_PREFIX}
+        - LARADOCK_PHP_VERSION=${PHP_LARAVEL_VERSION}
+        - INSTALL_BZ2=${PHP_FPM_INSTALL_BZ2}
+        - INSTALL_ENCHANT=${PHP_FPM_INSTALL_ENCHANT}
+        - INSTALL_GMP=${PHP_FPM_INSTALL_GMP}
+        - INSTALL_GNUPG=${PHP_FPM_INSTALL_GNUPG}
+        - INSTALL_XDEBUG=${PHP_FPM_INSTALL_XDEBUG}
+        - INSTALL_PCOV=${PHP_FPM_INSTALL_PCOV}
+        - INSTALL_PHPDBG=${PHP_FPM_INSTALL_PHPDBG}
+        - INSTALL_SSH2=${PHP_FPM_INSTALL_SSH2}
+        - INSTALL_SOAP=${PHP_FPM_INSTALL_SOAP}
+        - INSTALL_XSL=${PHP_FPM_INSTALL_XSL}
+        - INSTALL_SMB=${PHP_FPM_INSTALL_SMB}
+        - INSTALL_IMAP=${PHP_FPM_INSTALL_IMAP}
+        - INSTALL_MONGO=${PHP_FPM_INSTALL_MONGO}
+        - INSTALL_AMQP=${PHP_FPM_INSTALL_AMQP}
+        - INSTALL_CASSANDRA=${PHP_FPM_INSTALL_CASSANDRA}
+        - INSTALL_GEARMAN=${PHP_FPM_INSTALL_GEARMAN}
+        - INSTALL_MSSQL=${PHP_FPM_INSTALL_MSSQL}
+        - INSTALL_BCMATH=${PHP_FPM_INSTALL_BCMATH}
+        - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
+        - INSTALL_MEMCACHED=${PHP_FPM_INSTALL_MEMCACHED}
+        - INSTALL_OPCACHE=${PHP_FPM_INSTALL_OPCACHE}
+        - INSTALL_EXIF=${PHP_FPM_INSTALL_EXIF}
+        - INSTALL_AEROSPIKE=${PHP_FPM_INSTALL_AEROSPIKE}
+        - INSTALL_OCI8=${PHP_FPM_INSTALL_OCI8}
+        - INSTALL_MYSQLI=${PHP_FPM_INSTALL_MYSQLI}
+        - INSTALL_PGSQL=${PHP_FPM_INSTALL_PGSQL}
+        - INSTALL_PG_CLIENT=${PHP_FPM_INSTALL_PG_CLIENT}
+        - INSTALL_POSTGIS=${PHP_FPM_INSTALL_POSTGIS}
+        - INSTALL_INTL=${PHP_FPM_INSTALL_INTL}
+        - INSTALL_GHOSTSCRIPT=${PHP_FPM_INSTALL_GHOSTSCRIPT}
+        - INSTALL_LDAP=${PHP_FPM_INSTALL_LDAP}
+        - INSTALL_TAINT=${PHP_FPM_INSTALL_TAINT}
+        - INSTALL_IMAGE_OPTIMIZERS=${PHP_FPM_INSTALL_IMAGE_OPTIMIZERS}
+        - INSTALL_IMAGEMAGICK=${PHP_FPM_INSTALL_IMAGEMAGICK}
+        - INSTALL_CALENDAR=${PHP_FPM_INSTALL_CALENDAR}
+        - INSTALL_FAKETIME=${PHP_FPM_INSTALL_FAKETIME}
+        - INSTALL_IONCUBE=${PHP_FPM_INSTALL_IONCUBE}
+        - INSTALL_APCU=${PHP_FPM_INSTALL_APCU}
+        - INSTALL_CACHETOOL=${PHP_FPM_INSTALL_CACHETOOL}
+        - INSTALL_YAML=${PHP_FPM_INSTALL_YAML}
+        - INSTALL_RDKAFKA=${PHP_FPM_INSTALL_RDKAFKA}
+        - INSTALL_GETTEXT=${PHP_FPM_INSTALL_GETTEXT}
+        - INSTALL_ADDITIONAL_LOCALES=${PHP_FPM_INSTALL_ADDITIONAL_LOCALES}
+        - INSTALL_MYSQL_CLIENT=${PHP_FPM_INSTALL_MYSQL_CLIENT}
+        - INSTALL_PING=${PHP_FPM_INSTALL_PING}
+        - INSTALL_SSHPASS=${PHP_FPM_INSTALL_SSHPASS}
+        - INSTALL_MAILPARSE=${PHP_FPM_INSTALL_MAILPARSE}
+        - INSTALL_PCNTL=${PHP_FPM_INSTALL_PCNTL}
+        - ADDITIONAL_LOCALES=${PHP_FPM_ADDITIONAL_LOCALES}
+        - INSTALL_FFMPEG=${PHP_FPM_FFMPEG}
+        - INSTALL_AUDIOWAVEFORM=${PHP_FPM_AUDIOWAVEFORM}
+        - INSTALL_WKHTMLTOPDF=${PHP_FPM_INSTALL_WKHTMLTOPDF}
+        - INSTALL_XHPROF=${PHP_FPM_INSTALL_XHPROF}
+        - INSTALL_XMLRPC=${PHP_FPM_INSTALL_XMLRPC}
+        - INSTALL_PHPDECIMAL=${PHP_FPM_INSTALL_PHPDECIMAL}
+        - INSTALL_ZOOKEEPER=${PHP_FPM_INSTALL_ZOOKEEPER}
+        - PUID=${PHP_FPM_PUID}
+        - PGID=${PHP_FPM_PGID}
+        - IMAGEMAGICK_VERSION=${PHP_FPM_IMAGEMAGICK_VERSION}
+        - LOCALE=${PHP_FPM_DEFAULT_LOCALE}
+        - INSTALL_DOCKER_CLIENT=${PHP_FPM_INSTALL_DOCKER_CLIENT}
+        - http_proxy
+        - https_proxy
+        - no_proxy
+    volumes:
+      - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
+      - ${WEB_APP_LARAVEL_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+    ports:
+      - "${PHP_FPM_XDEBUG_PORT}:9003"
+    expose:
+      - "9000"
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
+      - DOCKER_HOST=tcp://docker-in-docker:2376
+      - DOCKER_TLS_VERIFY=1
+      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_CERT_PATH=/certs/client
+      - FAKETIME=${PHP_FPM_FAKETIME}
+    networks:
+      - heli
+
+  nginx:
+    build:
+      context: ./nginx
+      args:
+        - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
+        - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
+        - http_proxy
+        - https_proxy
+    volumes:
+      - ${WEB_APP_LARAVEL_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+      - ${NGINX_SSL_PATH}:/etc/nginx/ssl
+      - ${NGINX_UPSTREAM_PATH}:/etc/nginx/conf.d/upstream.conf
+    ports:
+      - "${NGINX_HOST_HTTP_PORT}:80"
+    depends_on:
+      - php
+    networks:
+      - heli

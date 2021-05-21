@@ -1,0 +1,12 @@
+# Put this file at Heli-Heli-API/webroot
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin http://localhost:9002
+    Header set Access-Control-Allow-Headers "cache-control,pragma,if-modified-since"
+    Header set Access-Control-Allow-Credentials true
+    Header set Access-Control-Allow-Methods "POST,GET,OPTIONS,DELETE,PUT,PATCH"
+</IfModule>

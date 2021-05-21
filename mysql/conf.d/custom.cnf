@@ -1,0 +1,5 @@
+# Use this file to customizing MySQL configuration
+
+# For example, to set timezone to UTC uncomment 2 lines below
+# [mysqld]
+# default-time-zone = UTC

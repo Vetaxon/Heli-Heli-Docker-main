@@ -1,0 +1,6 @@
+# PhpStorm project files
+.idea/
+
+# .env file
+.env
+.DS_Store
