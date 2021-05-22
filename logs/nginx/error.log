@@ -19,3 +19,5 @@
 2021/05/21 17:35:29 [emerg] 8#8: host not found in upstream "php:80" in /etc/nginx/conf.d/upstream.conf:6
 2021/05/21 18:57:39 [emerg] 8#8: host not found in upstream "php-fpm:9000" in /etc/nginx/conf.d/upstream.conf:2
 2021/05/21 20:07:28 [emerg] 9#9: invalid number of arguments in "proxy_pass" directive in /etc/nginx/sites-available/default.conf:17
+2021/05/22 05:53:29 [emerg] 8#8: invalid host in upstream "https://www.google.com" in /etc/nginx/conf.d/upstream.conf:10
+2021/05/22 05:57:10 [emerg] 10#10: invalid host in upstream "https://www.google.com" in /etc/nginx/conf.d/upstream.conf:10

@@ -816,34 +816,6 @@ RUN if [ ${INSTALL_CALENDAR} = true ]; then \
 ;fi
 
 ###########################################################################
-# Phalcon:
-###########################################################################
-
-ARG INSTALL_PHALCON=false
-ARG LARADOCK_PHALCON_VERSION
-ENV LARADOCK_PHALCON_VERSION ${LARADOCK_PHALCON_VERSION}
-
-# Copy phalcon configration
-COPY ./phalcon.ini /usr/local/etc/php/conf.d/phalcon.ini.disable
-
-RUN if [ $INSTALL_PHALCON = true ]; then \
-    apt-get install -yqq unzip libpcre3-dev gcc make re2c git automake autoconf\
-    && git clone https://github.com/jbboehr/php-psr.git \
-    && cd php-psr \
-    && phpize \
-    && ./configure \
-    && make \
-    && make test \
-    && make install \
-    && curl -L -o /tmp/cphalcon.zip https://github.com/phalcon/cphalcon/archive/v${LARADOCK_PHALCON_VERSION}.zip \
-    && unzip -d /tmp/ /tmp/cphalcon.zip \
-    && cd /tmp/cphalcon-${LARADOCK_PHALCON_VERSION}/build \
-    && ./install \
-    && mv /usr/local/etc/php/conf.d/phalcon.ini.disable /usr/local/etc/php/conf.d/phalcon.ini \
-    && rm -rf /tmp/cphalcon* \
-;fi
-
-###########################################################################
 # APCU:
 ###########################################################################
 
@@ -876,18 +848,6 @@ RUN if [ ${INSTALL_YAML} = true ]; then \
         echo '' | pecl install yaml; \
     fi \
     && docker-php-ext-enable yaml \
-;fi
-
-###########################################################################
-# RDKAFKA:
-###########################################################################
-
-ARG INSTALL_RDKAFKA=false
-
-RUN if [ ${INSTALL_RDKAFKA} = true ]; then \
-    apt-get install -yqq librdkafka-dev && \
-    pecl install rdkafka && \
-    docker-php-ext-enable rdkafka \
 ;fi
 
 ###########################################################################
@@ -1155,6 +1115,19 @@ RUN if [ ${DOWNGRADE_OPENSSL_TLS_AND_SECLEVEL} = true ]; then \
 ###########################################################################
 
 RUN set -xe; php -v | head -n 1 | grep -q "PHP ${LARADOCK_PHP_VERSION}."
+
+
+###########################################################################
+# Install composer:
+###########################################################################
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && mkdir /var/www/.composer && chown -R www-data:www-data /var/www/.composer
+
+
+###########################################################################
+# Tools:
+###########################################################################
+RUN apt-get install nano
 
 #
 #--------------------------------------------------------------------------
