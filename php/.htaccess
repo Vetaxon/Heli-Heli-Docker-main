@@ -6,7 +6,7 @@
 </IfModule>
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin http://localhost:9002
-    Header set Access-Control-Allow-Headers "cache-control,pragma,if-modified-since"
+    Header set Access-Control-Allow-Headers "Origin,X-Requested-With,Content-Type,Accept,Authorization,token,pragma,cache-control,if-modified-since,full-discount,card-token,card-id"
     Header set Access-Control-Allow-Credentials true
     Header set Access-Control-Allow-Methods "POST,GET,OPTIONS,DELETE,PUT,PATCH"
 </IfModule>
