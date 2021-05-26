@@ -33,6 +33,9 @@ services:
         - GID=${GID}
     user: "root"
     working_dir: /var/www/html
+    environment:
+      - SOLR_HOST=solr
+      - SOLR_PORT=8983
     volumes:
       - ${API_APP_CODE_PATH_HOST}:/var/www/html
       - ./php/apache2/sites-available/000-default.conf:/etc/apache2/sites-available/000-default.conf
